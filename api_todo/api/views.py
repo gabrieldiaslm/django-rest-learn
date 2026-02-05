@@ -1,20 +1,21 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from api.models import Todo
-from api.serializers import TodoSerializer
+from rest_framework import viewsets, filters
+from api.models import VaccineSchedule, Immunobiological
+from api.serializers import VaccineScheduleSerializer, ImmunobiologicalSerializer
 
+# Calendário de vacinas
+class VaccineScheduleViewSet(viewsets.ModelViewSet):
+    queryset = VaccineSchedule.objects.all()
+    serializer_class = VaccineScheduleSerializer
 
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'vaccine_id', 'age_group', 'diseases_prevented']
+    ordering_fields = ['min_age_in_days', 'created', 'id']
 
-@api_view(['GET', 'POST'])
-def todo_list(request):
-    if request.method == 'GET':
-        todo = Todo.objects.all()
-        serializer = TodoSerializer(todo, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        serializer = TodoSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# VACINAS
+class ImmunobiologicalViewSet(viewsets.ModelViewSet):
+    queryset = Immunobiological.objects.all()
+    serializer_class = ImmunobiologicalSerializer
+    
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'manufacturer', 'batch_number']
+    ordering_fields = ['expiration_date', 'created', 'name']
