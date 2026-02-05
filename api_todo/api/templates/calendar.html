@@ -1,0 +1,110 @@
+{% load vaccine_extras %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendário Nacional de Vacinação</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS da Timeline */
+        .timeline {
+            border-left: 3px solid #0d6efd;
+            margin-left: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+        .timeline-item {
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .timeline-marker {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border: 3px solid #0d6efd;
+            border-radius: 50%;
+            position: absolute;
+            left: -41px;
+            top: 5px;
+        }
+        .age-badge {
+            font-weight: bold;
+            color: #0d6efd;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+        }
+        .card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold">Calendário de Vacinação</h1>
+        <p class="text-muted">Consulte as vacinas disponíveis para cada fase da vida.</p>
+        <a href="/dashboard/" class="btn btn-outline-secondary btn-sm">← Voltar ao Dashboard</a>
+    </div>
+
+    <ul class="nav nav-pills justify-content-center mb-5" id="pills-tab" role="tablist">
+        {% for group in age_groups %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if forloop.first %}active{% endif %} rounded-pill px-4" 
+                    id="pills-{{ forloop.counter }}-tab" 
+                    data-bs-toggle="pill" 
+                    data-bs-target="#pills-{{ forloop.counter }}" 
+                    type="button" role="tab">
+                {{ group }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+        {% for group in age_groups %}
+        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+             id="pills-{{ forloop.counter }}" role="tabpanel">
+            
+            <div class="timeline">
+                {% for vacina in schedules %}
+                    {% if vacina.age_group == group %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <span class="age-badge">{{ vacina.min_age_in_days|humanize_days }}</span>
+                        
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-1 text-primary">{{ vacina.name }}</h5>
+                                    <span class="badge bg-secondary">{{ vacina.dose_description }}</span>
+                                </div>
+                                <p class="text-muted small mb-2">Protege contra:</p>
+                                <div>
+                                    {% for doenca in vacina.diseases_prevented %}
+                                        <span class="badge bg-light text-dark border">{{ doenca }}</span>
+                                    {% empty %}
+                                        <span class="text-muted small">Informação não listada</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

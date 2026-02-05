@@ -1,6 +1,5 @@
 from django.urls import path, include
 from api.views import VaccineScheduleViewSet, ImmunobiologicalViewSet
-
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()

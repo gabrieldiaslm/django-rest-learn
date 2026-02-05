@@ -34,6 +34,7 @@ class VaccineSchedule(models.Model):
         return f"{self.name} ({self.dose_description}) - {self.age_group}"
 
 class Immunobiological(models.Model):
+
     id = models.IntegerField(primary_key=True)
     
     # colocar auto_now_add e auto_now depois
@@ -56,3 +57,30 @@ class Immunobiological(models.Model):
 
     def __str__(self):
         return f"{self.name} - Lote: {self.batch_number} ({self.manufacturer})"
+
+class VaccinationRecord(models.Model):
+    patient_id = models.CharField(max_length=255, verbose_name="ID do Paciente") #na tabela é só "id"
+    
+    vaccine_schedule = models.ForeignKey(
+        VaccineSchedule,
+        on_delete=models.PROTECT, 
+        related_name='records'
+    )
+    
+    immunobiological = models.ForeignKey(
+        Immunobiological,
+        on_delete=models.PROTECT,
+        related_name='records'
+    )
+    application_date = models.DateTimeField(verbose_name="Data da Aplicação")
+    created = models.DateTimeField()#auto_now_add=True
+    modified = models.DateTimeField()#auto_now=True
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Registro de Vacinação"
+        verbose_name_plural = "Registros de Vacinação"
+        ordering = ['-application_date'] 
+
+    def __str__(self):
+        return f"{self.patient_id} - {self.vaccine_schedule.name} ({self.application_date.strftime('%d/%m/%Y')})"
