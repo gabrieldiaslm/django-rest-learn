@@ -37,9 +37,8 @@ class Immunobiological(models.Model):
 
     id = models.IntegerField(primary_key=True)
     
-    # colocar auto_now_add e auto_now depois
-    created = models.DateTimeField()
-    modified = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
     
     active = models.BooleanField(default=True)
     
