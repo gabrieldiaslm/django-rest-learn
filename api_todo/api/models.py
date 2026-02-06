@@ -1,14 +1,40 @@
+from datetime import date
 from django.db import models
+
 class Todo(models.Model):
     name = models.CharField(max_length=120)
     done = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class Patient(models.Model):
+    id = models.IntegerField(primary_key=True)
     
+    name = models.CharField("Nome Completo", max_length=255)
+    cpf = models.CharField("CPF", max_length=14, null=True, blank=True)
+    cns = models.CharField("Cartão SUS (CNS)", max_length=50, null=True, blank=True)
+    birth_date = models.DateField("Data de Nascimento", null=True, blank=True)
+    mother_name = models.CharField("Nome da Mãe", max_length=255, null=True, blank=True)
+    
+    gender = models.CharField("Sexo", max_length=20, null=True, blank=True)
+    
+    created = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} (CNS: {self.cns})"
+
+    @property
+    def age_years(self):
+        if not self.birth_date:
+            return 0
+        today = date.today()
+        return today.year - self.birth_date.year - ((today.month, today.day) < (self.birth_date.month, self.birth_date.day))
+
 class VaccineSchedule(models.Model):
     id = models.IntegerField(primary_key=True)
     
     created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+    modified = models.DateTimeField()
     
     active = models.BooleanField(default=True)
     
@@ -58,22 +84,19 @@ class Immunobiological(models.Model):
         return f"{self.name} - Lote: {self.batch_number} ({self.manufacturer})"
 
 class VaccinationRecord(models.Model):
-    patient_id = models.CharField(max_length=255, verbose_name="ID do Paciente") #na tabela é só "id"
-    
-    vaccine_schedule = models.ForeignKey(
-        VaccineSchedule,
-        on_delete=models.PROTECT, 
-        related_name='records'
+    patient = models.ForeignKey(
+        Patient, 
+        on_delete=models.CASCADE, 
+        related_name='vaccinations',
+        verbose_name="Paciente"
     )
     
-    immunobiological = models.ForeignKey(
-        Immunobiological,
-        on_delete=models.PROTECT,
-        related_name='records'
-    )
-    application_date = models.DateTimeField(verbose_name="Data da Aplicação")
-    created = models.DateTimeField()#auto_now_add=True
-    modified = models.DateTimeField()#auto_now=True
+    vaccine_schedule = models.ForeignKey('VaccineSchedule', on_delete=models.PROTECT, related_name='records')
+    immunobiological = models.ForeignKey('Immunobiological', on_delete=models.PROTECT, null=True, blank=True, related_name='records')
+    application_date = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
     active = models.BooleanField(default=True)
 
     class Meta:

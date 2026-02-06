@@ -1,34 +1,55 @@
 from django.contrib import admin
-from .models import VaccinationRecord, VaccineSchedule, Immunobiological
+from .models import Patient, VaccineSchedule, Immunobiological, VaccinationRecord
+
+@admin.register(Patient)
+class PatientAdmin(admin.ModelAdmin):
+    list_display = ('name', 'cns', 'cpf', 'birth_date', 'get_age', 'active')
+    
+    search_fields = ('name', 'cpf', 'cns')
+    
+    list_filter = ('active', 'gender', 'created')
+    
+    ordering = ('name',)
+
+    def get_age(self, obj):
+        return f"{obj.age_years} anos"
+    get_age.short_description = 'Idade'
+
 
 @admin.register(VaccineSchedule)
 class VaccineScheduleAdmin(admin.ModelAdmin):
-    # Colunas que aparecem na lista
-    list_display = ('id', 'name', 'dose_description', 'age_group', 'active', 'vaccine_id')
+    list_display = ('name', 'dose_description', 'age_group', 'vaccine_id', 'active')
     
-    # Filtros laterais
-    list_filter = ('age_group', 'active', 'created')
+    search_fields = ('name', 'vaccine_id')
     
-    # Barra de busca (pesquisa por nome, ID da vacina ou descrição da dose)
-    search_fields = ('name', 'vaccine_id', 'dose_description')
+    list_filter = ('age_group', 'active')
     
-    # Ordenação padrão
     ordering = ('min_age_in_days', 'id')
+
 
 @admin.register(Immunobiological)
 class ImmunobiologicalAdmin(admin.ModelAdmin):
-    # Colunas que aparecem na lista
-    list_display = ('id', 'name', 'manufacturer', 'batch_number', 'expiration_date', 'active')
+    list_display = ('name', 'batch_number', 'manufacturer', 'expiration_date', 'active')
     
-    # Filtros laterais (útil para ver o que está vencido ou inativo)
-    list_filter = ('manufacturer', 'active', 'expiration_date')
-    
-    # Barra de busca
     search_fields = ('name', 'batch_number', 'manufacturer')
+    list_filter = ('active', 'expiration_date', 'manufacturer')
     
-    # Ordenação (do que vence mais cedo para o mais tarde)
     ordering = ('expiration_date',)
+
 
 @admin.register(VaccinationRecord)
 class VaccinationRecordAdmin(admin.ModelAdmin):
-    list_display = ('patient_id', 'vaccine_schedule','immunobiological', 'application_date', 'created', 'modified')
+    list_display = ('patient', 'vaccine_schedule', 'application_date', 'get_lote', 'active')
+    
+    list_filter = ('active', 'application_date', 'vaccine_schedule__age_group')
+    
+    search_fields = ('patient__name', 'patient__cpf', 'vaccine_schedule__name')
+    
+    date_hierarchy = 'application_date'
+    autocomplete_fields = ['patient', 'vaccine_schedule', 'immunobiological']
+
+    def get_lote(self, obj):
+        if obj.immunobiological:
+            return obj.immunobiological.batch_number
+        return "-"
+    get_lote.short_description = 'Lote'

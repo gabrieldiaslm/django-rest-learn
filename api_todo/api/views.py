@@ -1,9 +1,28 @@
 from rest_framework import viewsets, filters
-from api.models import VaccineSchedule, Immunobiological, VaccinationRecord
+from api.models import VaccineSchedule, Immunobiological, VaccinationRecord, Patient
 from api.serializers import VaccineScheduleSerializer, ImmunobiologicalSerializer, VaccinationRecordSerializer
-from django.shortcuts import render
-from django.db.models import Count
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Count, Q
 import json
+
+
+def patient_list_view(request):
+    query = request.GET.get('q', '') 
+    
+    if query:
+        patients = Patient.objects.filter(
+            Q(name__icontains=query) | 
+            Q(cpf__icontains=query) | 
+            Q(cns__icontains=query)
+        ).filter(active=True).order_by('name')
+    else:
+        patients = Patient.objects.filter(active=True).order_by('name')[:50]
+
+    return render(request, 'patient_list.html', {
+        'patients': patients,
+        'query': query
+    })
+
 
 # Calendário de vacinas
 class VaccineScheduleViewSet(viewsets.ModelViewSet):
@@ -69,3 +88,42 @@ class VaccinationRecordViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['patient_id', 'vaccine_schedule__name']
     ordering_fields = ['application_date', 'created']
+
+def patient_card_view(request, patient_id):
+    patient = get_object_or_404(Patient, pk=patient_id)
+    
+    # 1. Busca todas as vacinas que existem no calendário
+    all_schedules = VaccineSchedule.objects.filter(active=True).order_by('min_age_in_days')
+    
+    # 2. Busca todas as vacinas que o paciente JÁ TOMOU
+    taken_records = VaccinationRecord.objects.filter(patient=patient, active=True)
+    
+    # Cria um dicionário para acesso rápido: { schedule_id: registro }
+    taken_map = {rec.vaccine_schedule_id: rec for rec in taken_records}
+    
+    # 3. Monta a lista final para o template (Status: OK ou PENDENTE)
+    timeline = []
+    for schedule in all_schedules:
+        record = taken_map.get(schedule.id)
+        
+        status = 'PENDENTE'
+        date_taken = None
+        lote = None
+        
+        if record:
+            status = 'OK'
+            date_taken = record.application_date
+            lote = record.immunobiological.batch_number if record.immunobiological else 'N/A'
+            
+        timeline.append({
+            'schedule': schedule,
+            'status': status,
+            'record': record,
+            'date_taken': date_taken,
+            'lote': lote
+        })
+
+    return render(request, 'patient_card.html', {
+        'patient': patient, 
+        'timeline': timeline
+    })

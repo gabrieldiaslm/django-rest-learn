@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cartão de Vacina - {{ patient.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .vaccine-card-header {
+            background: linear-gradient(135deg, #005c97 0%, #363795 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 30px;
+        }
+        .status-badge {
+            width: 100px;
+        }
+        .timeline-row {
+            border-bottom: 1px solid #eee;
+            transition: 0.2s;
+        }
+        .timeline-row:hover {
+            background-color: #f8f9fa;
+        }
+        .timeline-row.taken {
+            border-left: 5px solid #198754; /* Verde */
+            background-color: #f1fcf5;
+        }
+        .timeline-row.pending {
+            border-left: 5px solid #ffc107; /* Amarelo */
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    
+    <div class="card shadow-lg border-0 mb-4">
+        <div class="vaccine-card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="text-uppercase opacity-75 mb-1">Cartão Nacional de Saúde</h5>
+                    <h2 class="fw-bold mb-0">{{ patient.name }}</h2>
+                    <div class="mt-3">
+                        <span class="me-3"><i class="bi bi-calendar-event"></i> Nasc: {{ patient.birth_date|date:"d/m/Y" }}</span>
+                        <span class="me-3"><i class="bi bi-person"></i> Idade: {{ patient.age_years }} anos</span>
+                        <span><i class="bi bi-gender-ambiguous"></i> Sexo: {{ patient.gender }}</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="bg-white text-dark px-3 py-2 rounded shadow-sm">
+                        <small class="d-block text-muted">CNS / Cartão SUS</small>
+                        <strong class="fs-5">{{ patient.cns|default:"Não informado" }}</strong>
+                    </div>
+                    <div class="mt-2 text-white-50 small">
+                        Mãe: {{ patient.mother_name }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light text-uppercase small text-muted">
+                        <tr>
+                            <th class="ps-4 py-3">Idade / Fase</th>
+                            <th class="py-3">Vacina / Dose</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Data Aplicação</th>
+                            <th class="pe-4 py-3 text-end">Lote / Local</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in timeline %}
+                        <tr class="timeline-row {% if item.status == 'OK' %}taken{% else %}pending{% endif %}">
+                            
+                            <td class="ps-4 py-3 align-middle">
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">
+                                    {{ item.schedule.age_group }}
+                                </span>
+                                <div class="small text-muted mt-1">
+                                    A partir de {{ item.schedule.min_age_in_days }} dias
+                                </div>
+                            </td>
+
+                            <td class="py-3 align-middle">
+                                <strong class="text-dark d-block">{{ item.schedule.name }}</strong>
+                                <small class="text-muted">{{ item.schedule.dose_description }}</small>
+                            </td>
+
+                            <td class="py-3 align-middle">
+                                {% if item.status == 'OK' %}
+                                    <span class="badge bg-success status-badge py-2"><i class="bi bi-check-circle"></i> TOMOU</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark status-badge py-2"><i class="bi bi-clock"></i> PENDENTE</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="py-3 align-middle">
+                                {% if item.date_taken %}
+                                    <div class="fw-bold text-success">{{ item.date_taken|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">{{ item.date_taken|date:"H:i" }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="pe-4 py-3 align-middle text-end">
+                                {% if item.lote %}
+                                    <code class="bg-light border px-2 py-1 rounded">{{ item.lote }}</code>
+                                {% else %}
+                                    <small class="text-muted">Aguardando aplicação</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white text-center py-3 border-top">
+            <a href="/" class="btn btn-outline-primary">Voltar ao Painel</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
