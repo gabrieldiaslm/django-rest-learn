@@ -84,3 +84,4 @@ class VaccinationRecord(models.Model):
 
     def __str__(self):
         return f"{self.patient_id} - {self.vaccine_schedule.name} ({self.application_date.strftime('%d/%m/%Y')})"
+
