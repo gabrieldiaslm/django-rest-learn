@@ -4,7 +4,7 @@ from api.serializers import VaccineScheduleSerializer, ImmunobiologicalSerialize
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count, Q
 import json
-
+from api.filters import AgeVaccineFilter
 
 def patient_list_view(request):
     query = request.GET.get('q', '') 

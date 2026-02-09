@@ -23,7 +23,8 @@ INSTALLED_APPS = [
     #apps
     'api',
     #libs
-    'rest_framework'
+    'rest_framework',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
