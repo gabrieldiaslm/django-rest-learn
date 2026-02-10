@@ -1,10 +1,22 @@
 from rest_framework import viewsets, filters
-from api.models import VaccineSchedule, Immunobiological, VaccinationRecord, Patient
+from api.models import VaccineSchedule, Immunobiological, VaccinationRecord, Patient, UsuarioTeste
 from api.serializers import VaccineScheduleSerializer, ImmunobiologicalSerializer, VaccinationRecordSerializer
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count, Q
 import json
 from api.filters import AgeVaccineFilter
+
+def usertest_list_view(request):
+    query = request.GET.get('q','')
+    if query:
+        usertest = UsuarioTeste.objects.all()
+    else:
+        usertest = UsuarioTeste.objects.all()
+    return render(usertest, 'usertest.html',{
+        'usertest': usertest,
+        'query':query
+    })
+
 
 def patient_list_view(request):
     query = request.GET.get('q', '') 

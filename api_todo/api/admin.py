@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Patient, VaccineSchedule, Immunobiological, VaccinationRecord
+from .models import Patient, UsuarioTeste, VaccineSchedule, Immunobiological, VaccinationRecord
+
+
+@admin.register(UsuarioTeste)
+class UsuarioTesteAdmin(admin.ModelAdmin):
+    list_display=('name', 'nickname', 'is_alive', 'created_at')
+    search_fields = ('name', 'nickname')
+    ordering = ('created_at', 'name')
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):

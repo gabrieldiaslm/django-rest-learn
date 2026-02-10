@@ -6,6 +6,13 @@ class Todo(models.Model):
     done = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class UsuarioTeste(models.Model):
+    name = models.CharField(max_length=120)
+    nickname = models.CharField(max_length=120)
+    is_alive = models.BooleanField(default=True)
+    created_at= models.DateTimeField(auto_now_add=True)
+
+
 class Patient(models.Model):
     id = models.IntegerField(primary_key=True)
     

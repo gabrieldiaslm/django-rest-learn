@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'api',
     #libs
     'rest_framework',
-    'django_filters'
+    'django_filters',
+    'faker'
 ]
 
 MIDDLEWARE = [
